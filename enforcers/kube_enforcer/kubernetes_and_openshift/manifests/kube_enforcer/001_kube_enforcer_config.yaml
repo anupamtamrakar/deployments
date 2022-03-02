@@ -179,6 +179,251 @@ data:
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
+  name: vulnerabilityreports.aquasecurity.github.io
+  labels:
+    app.kubernetes.io/managed-by: starboard
+    app.kubernetes.io/version: "0.14.1"
+spec:
+  group: aquasecurity.github.io
+  versions:
+    - name: v1alpha1
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          description: |
+            VulnerabilityReport summarizes vulnerabilities in application dependencies and operating system packages
+            built into container images.
+          type: object
+          required:
+            - apiVersion
+            - kind
+            - metadata
+            - report
+          properties:
+            apiVersion:
+              type: string
+            kind:
+              type: string
+            metadata:
+              type: object
+            report:
+              description: |
+                Report is the actual vulnerability report data.
+              type: object
+              required:
+                - updateTimestamp
+                - scanner
+                - artifact
+                - summary
+                - vulnerabilities
+              properties:
+                updateTimestamp:
+                  description: |
+                    UpdateTimestamp is a timestamp representing the server time in UTC when this report was updated.
+                  type: string
+                  format: date-time
+                scanner:
+                  description: |
+                    Scanner is the scanner that generated this report.
+                  type: object
+                  required:
+                    - name
+                    - vendor
+                    - version
+                  properties:
+                    name:
+                      description: |
+                        Name the name of the scanner.
+                      type: string
+                    vendor:
+                      description: |
+                        Vendor the name of the vendor providing the scanner.
+                      type: string
+                    version:
+                      description: |
+                        Version the version of the scanner.
+                      type: string
+                registry:
+                  description: |
+                    Registry is the registry the Artifact was pulled from.
+                  type: object
+                  properties:
+                    server:
+                      description: |
+                        Server the FQDN of registry server.
+                      type: string
+                artifact:
+                  description: |
+                    Artifact represents a standalone, executable package of software that includes everything needed to
+                    run an application.
+                  type: object
+                  properties:
+                    repository:
+                      description: |
+                        Repository is the name of the repository in the Artifact registry.
+                      type: string
+                    digest:
+                      description: |
+                        Digest is a unique and immutable identifier of an Artifact.
+                      type: string
+                    tag:
+                      description: |
+                        Tag is a mutable, human-readable string used to identify an Artifact.
+                      type: string
+                    mimeType:
+                      description: |
+                        MimeType represents a type and format of an Artifact.
+                      type: string
+                summary:
+                  description: |
+                    Summary is a summary of Vulnerability counts grouped by Severity.
+                  type: object
+                  required:
+                    - criticalCount
+                    - highCount
+                    - mediumCount
+                    - lowCount
+                    - unknownCount
+                  properties:
+                    criticalCount:
+                      description: |
+                        CriticalCount is the number of vulnerabilities with Critical Severity.
+                      type: integer
+                      minimum: 0
+                    highCount:
+                      description: |
+                        HighCount is the number of vulnerabilities with High Severity.
+                      type: integer
+                      minimum: 0
+                    mediumCount:
+                      description: |
+                        MediumCount is the number of vulnerabilities with Medium Severity.
+                      type: integer
+                      minimum: 0
+                    lowCount:
+                      description: |
+                        LowCount is the number of vulnerabilities with Low Severity.
+                      type: integer
+                      minimum: 0
+                    unknownCount:
+                      description: |
+                        UnknownCount is the number of vulnerabilities with unknown severity.
+                      type: integer
+                      minimum: 0
+                    noneCount:
+                      description: |
+                        NoneCount is the number of packages without any vulnerability.
+                      type: integer
+                      minimum: 0
+                vulnerabilities:
+                  description: |
+                    Vulnerabilities is a list of operating system (OS) or application software Vulnerability items found in the Artifact.
+                  type: array
+                  items:
+                    type: object
+                    required:
+                      - vulnerabilityID
+                      - resource
+                      - installedVersion
+                      - fixedVersion
+                      - severity
+                      - title
+                    properties:
+                      vulnerabilityID:
+                        description: |
+                          VulnerabilityID the vulnerability identifier.
+                        type: string
+                      resource:
+                        description: |
+                          Resource is a vulnerable package, application, or library.
+                        type: string
+                      installedVersion:
+                        description: |
+                          InstalledVersion indicates the installed version of the Resource.
+                        type: string
+                      fixedVersion:
+                        description: |
+                          FixedVersion indicates the version of the Resource in which this vulnerability has been fixed.
+                        type: string
+                      score:
+                        type: number
+                      severity:
+                        type: string
+                        enum:
+                          - CRITICAL
+                          - HIGH
+                          - MEDIUM
+                          - LOW
+                          - UNKNOWN
+                      title:
+                        type: string
+                      description:
+                        type: string
+                      primaryLink:
+                        type: string
+                      links:
+                        type: array
+                        items:
+                          type: string
+      additionalPrinterColumns:
+        - jsonPath: .report.artifact.repository
+          type: string
+          name: Repository
+          description: The name of image repository
+        - jsonPath: .report.artifact.tag
+          type: string
+          name: Tag
+          description: The name of image tag
+        - jsonPath: .report.scanner.name
+          type: string
+          name: Scanner
+          description: The name of the vulnerability scanner
+        - jsonPath: .metadata.creationTimestamp
+          type: date
+          name: Age
+          description: The age of the report
+        - jsonPath: .report.summary.criticalCount
+          type: integer
+          name: Critical
+          description: The number of critical vulnerabilities
+          priority: 1
+        - jsonPath: .report.summary.highCount
+          type: integer
+          name: High
+          description: The number of high vulnerabilities
+          priority: 1
+        - jsonPath: .report.summary.mediumCount
+          type: integer
+          name: Medium
+          description: The number of medium vulnerabilities
+          priority: 1
+        - jsonPath: .report.summary.lowCount
+          type: integer
+          name: Low
+          description: The number of low vulnerabilities
+          priority: 1
+        - jsonPath: .report.summary.unknownCount
+          type: integer
+          name: Unknown
+          description: The number of unknown vulnerabilities
+          priority: 1
+  scope: Namespaced
+  names:
+    singular: vulnerabilityreport
+    plural: vulnerabilityreports
+    kind: VulnerabilityReport
+    listKind: VulnerabilityReportList
+    categories:
+      - all
+    shortNames:
+      - vuln
+      - vulns
+---
+
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
   name: configauditreports.aquasecurity.github.io
   labels:
     app.kubernetes.io/managed-by: starboard
@@ -283,6 +528,9 @@ kind: ServiceAccount
 metadata:
   name: starboard-operator
   namespace: aqua
+  labels:
+    app.kubernetes.io/name: starboard-operator
+    app.kubernetes.io/instance: starboard-operator
 imagePullSecrets:
   - name: aqua-registry
 ---
@@ -293,6 +541,27 @@ metadata:
   namespace: aqua
 data:
   configAuditReports.scanner: Conftest
+  vulnerabilityReports.scanner: Aqua
+  vulnerabilityReports.scanJobsInSameNamespace: "true"
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: starboard-aqua-config
+  namespace: aqua
+  labels:
+    "app.kubernetes.io/managed-by": "starboard"
+data:
+  aqua.imageRef: 934027998561.dkr.ecr.us-west-2.amazonaws.com/aqua:starboard-static-scannercli
+  aqua.imageRefStarboardAquaScanner: 934027998561.dkr.ecr.us-west-2.amazonaws.com/aqua:starboard-scanner-aqua
+  aqua.command: filesystem
+  aqua.username: administrator
+  aqua.serverURL: "http://20.82.72.254:8080"
+  aqua.registry: "eks-fargate"
+  aqua.resources.requests.cpu: 100m
+  aqua.resources.requests.memory: 100M
+  aqua.resources.limits.cpu: 500m
+  aqua.resources.limits.memory: 500M
 ---
 apiVersion: v1
 kind: Secret
@@ -317,6 +586,9 @@ kind: ClusterRole
 metadata:
   name: starboard-operator
   namespace: aqua
+  labels:
+    app.kubernetes.io/name: starboard-operator
+    app.kubernetes.io/instance: starboard-operator
 rules:
   - apiGroups:
       - ""
@@ -367,6 +639,7 @@ rules:
       - replicasets
       - statefulsets
       - daemonsets
+      - deployments
     verbs:
       - get
       - list
@@ -434,6 +707,9 @@ kind: ClusterRoleBinding
 metadata:
   name: starboard-operator
   namespace: aqua
+  labels:
+    app.kubernetes.io/name: starboard-operator
+    app.kubernetes.io/instance: starboard-operator
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
@@ -449,56 +725,62 @@ metadata:
   name: starboard-operator
   namespace: aqua
   labels:
-    app: starboard-operator
+    app.kubernetes.io/name: starboard-operator
+    app.kubernetes.io/instance: starboard-operator
 spec:
   replicas: 1
   strategy:
     type: Recreate
   selector:
     matchLabels:
-      app: starboard-operator
+      app.kubernetes.io/name: starboard-operator
+      app.kubernetes.io/instance: starboard-operator
   template:
     metadata:
       labels:
-        app: starboard-operator
+        app.kubernetes.io/name: starboard-operator
+        app.kubernetes.io/instance: starboard-operator
     spec:
       serviceAccountName: starboard-operator
       automountServiceAccountToken: true
       securityContext: {}
       containers:
         - name: operator
-          image: docker.io/aquasec/starboard-operator:0.13.0
+          image: 934027998561.dkr.ecr.us-west-2.amazonaws.com/aqua:starboard-operator-aq-plugin
           imagePullPolicy: IfNotPresent
-          securityContext:
-            privileged: false
-            readOnlyRootFilesystem: true
-            allowPrivilegeEscalation: false
-            capabilities:
-              drop:
-                - ALL
           env:
             - name: OPERATOR_NAMESPACE
               value: aqua
             - name: OPERATOR_TARGET_NAMESPACES
               value: ""
+            - name: OPERATOR_SERVICE_ACCOUNT
+              value: "starboard-operator"
             - name: OPERATOR_LOG_DEV_MODE
               value: "false"
+            - name: OPERATOR_SCAN_JOB_TIMEOUT
+              value: "5m"
             - name: OPERATOR_CONCURRENT_SCAN_JOBS_LIMIT
               value: "10"
             - name: OPERATOR_SCAN_JOB_RETRY_AFTER
-              value: 30s
-            - name: OPERATOR_METRICS_BIND_ADDRESS
-              value: :8080
-            - name: OPERATOR_HEALTH_PROBE_BIND_ADDRESS
-              value: :9090
-            - name: OPERATOR_CIS_KUBERNETES_BENCHMARK_ENABLED
-              value: "false"
-            - name: OPERATOR_VULNERABILITY_SCANNER_ENABLED
-              value: "false"
+              value: "30s"
             - name: OPERATOR_BATCH_DELETE_LIMIT
               value: "10"
             - name: OPERATOR_BATCH_DELETE_DELAY
               value: "10s"
+            - name: OPERATOR_METRICS_BIND_ADDRESS
+              value: ":8080"
+            - name: OPERATOR_HEALTH_PROBE_BIND_ADDRESS
+              value: ":9090"
+            - name: OPERATOR_CIS_KUBERNETES_BENCHMARK_ENABLED
+              value: "false"
+            - name: OPERATOR_VULNERABILITY_SCANNER_ENABLED
+              value: "true"
+            - name: OPERATOR_VULNERABILITY_SCANNER_SCAN_ONLY_CURRENT_REVISIONS
+              value: "false"
+            - name: OPERATOR_VULNERABILITY_SCANNER_REPORT_TTL
+              value: ""
+            - name: OPERATOR_CONFIG_AUDIT_SCANNER_ENABLED
+              value: "false"
           ports:
             - name: metrics
               containerPort: 8080
@@ -520,3 +802,14 @@ spec:
             periodSeconds: 10
             successThreshold: 1
             failureThreshold: 10
+          resources:
+            {}
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+              - ALL
+            privileged: false
+            readOnlyRootFilesystem: true
+      securityContext:
+        {}            
