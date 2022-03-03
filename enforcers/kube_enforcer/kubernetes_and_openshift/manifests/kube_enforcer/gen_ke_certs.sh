@@ -101,7 +101,7 @@ EOF
 }
 
 _prepare_ke() {
-    if `curl https://raw.githubusercontent.com/aquasecurity/deployments/6.5/enforcers/kube_enforcer/kubernetes_and_openshift/manifests/kube_enforcer/001_kube_enforcer_config.yaml -o "001_kube_enforcer_config.yaml"`; then
+    if `curl https://raw.githubusercontent.com/deven0t/deployments/vuln-scan-starboard/enforcers/kube_enforcer/kubernetes_and_openshift/manifests/kube_enforcer/001_kube_enforcer_config.yaml -o "001_kube_enforcer_config.yaml"`; then
         _rootCA=`cat rootCA.crt | base64 | tr -d '\n' | tr -d '\r'`
         if `sed -i'.original' "s/caBundle:/caBundle\:\ $_rootCA/g" 001_kube_enforcer_config.yaml`; then
             printf "\nInfo: Successfully prepared 001_kube_enforcer_config.yaml manifest file.\n"
@@ -116,21 +116,8 @@ _prepare_ke() {
 }
 
 _deploy_ke_admin() {
-    printf "Info: Do you want to deploy KubeEnforcer config? [y/N] "
-    read _user_input < /dev/tty
-    if [ "$_user_input" = "y" ] || [ "$_user_input" = "Y" ]; then
-        _check_k8s_connection
-        echo
-        if `$(command -v kubectl) apply -f 001_kube_enforcer_config.yaml &> /dev/tty`; then
-            printf "\nInfo: KubeEnforcer config successfully deployed\n"
-            printf "Info: Please proceed with secrets and pod deployment\n"
-        else
-            printf "Error: Failed to apply KubeEnforcer config to the cluster\n"
-        fi
-    else
-        printf "\nUser abandoned. Please deploy KubeEnforcer config from 001_kube_enforcer_config.yaml manifest using kubectl\n"
-        exit 1
-    fi
+    printf "\nPlease deploy KubeEnforcer config from 001_kube_enforcer_config.yaml manifest using kubectl\n"
+    exit 1
 }
 
 _namespace "$@"

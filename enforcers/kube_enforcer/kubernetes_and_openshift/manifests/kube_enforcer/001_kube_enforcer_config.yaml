@@ -550,13 +550,14 @@ metadata:
   name: starboard-aqua-config
   namespace: aqua
   labels:
-    "app.kubernetes.io/managed-by": "starboard"
+    app.kubernetes.io/name: starboard-operator
+    app.kubernetes.io/instance: starboard-operator
 data:
-  aqua.imageRef: 934027998561.dkr.ecr.us-west-2.amazonaws.com/aqua:starboard-static-scannercli
-  aqua.imageRefStarboardAquaScanner: 934027998561.dkr.ecr.us-west-2.amazonaws.com/aqua:starboard-scanner-aqua
+  aqua.imageRef: aquadev.azurecr.io/scanner:starboard-static-scannercli
+  aqua.imageRefStarboardAquaScanner: aquadev.azurecr.io/scanner:starboard-scanner-aqua
   aqua.command: filesystem
   aqua.username: administrator
-  aqua.serverURL: "http://20.82.72.254:8080"
+  aqua.serverURL: "http://<ip-address>:8080"
   aqua.registry: "eks-fargate"
   aqua.resources.requests.cpu: 100m
   aqua.resources.requests.memory: 100M
@@ -746,7 +747,7 @@ spec:
       securityContext: {}
       containers:
         - name: operator
-          image: 934027998561.dkr.ecr.us-west-2.amazonaws.com/aqua:starboard-operator-aq-plugin
+          image: aquadev.azurecr.io/deventest:starboard-operator-aq-plugin
           imagePullPolicy: IfNotPresent
           env:
             - name: OPERATOR_NAMESPACE
